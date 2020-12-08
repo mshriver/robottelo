@@ -1031,7 +1031,6 @@ class EndToEndTestCase(TestCase, ClientProvisioningMixin):
     @pytest.mark.tier1
     @pytest.mark.upgrade
     @pytest.mark.build_sanity
-    @pytest.mark.skip_if_open('BZ:1897360')
     def test_positive_ping(self):
         """Check if all services are running
 
@@ -1039,6 +1038,11 @@ class EndToEndTestCase(TestCase, ClientProvisioningMixin):
 
         :expectedresults: Overall and individual services status should be
             'ok'.
+
+        :bz: 1897360
+
+        tomcat SELinux denials were observed in this testcase after the full API testsuite runs
+        Not reproduceable on a cleanly installed system
 
         """
         response = entities.Ping().search_json()
