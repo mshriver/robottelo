@@ -87,9 +87,7 @@ def reader_user(module_loc, module_org):
 
 
 @pytest.mark.tier2
-def test_positive_create_rule_with_non_admin_user(
-    manager_loc, manager_user, module_org, test_name
-):
+def test_positive_create_rule_with_non_admin_user(manager_loc, manager_user, module_org, request):
     """Create rule with non-admin user by associating discovery_manager role
 
     :id: 6a03983b-363d-4646-b277-34af5f5abc55
@@ -101,7 +99,9 @@ def test_positive_create_rule_with_non_admin_user(
     name = gen_string('alpha')
     search = gen_string('alpha')
     hg = entities.HostGroup(organization=[module_org]).create()
-    with Session(test_name, user=manager_user.login, password=manager_user.password) as session:
+    with Session(
+        request.node.nodeid, user=manager_user.login, password=manager_user.password
+    ) as session:
         session.location.select(loc_name=manager_loc.name)
         session.discoveryrule.create(
             {'primary.name': name, 'primary.search': search, 'primary.host_group': hg.name}
@@ -112,9 +112,7 @@ def test_positive_create_rule_with_non_admin_user(
 
 
 @pytest.mark.tier2
-def test_positive_delete_rule_with_non_admin_user(
-    manager_loc, manager_user, module_org, test_name
-):
+def test_positive_delete_rule_with_non_admin_user(manager_loc, manager_user, module_org, request):
     """Delete rule with non-admin user by associating discovery_manager role
 
     :id: 7fa56bab-82d7-46c9-a4fa-c44ef173c703
@@ -127,7 +125,9 @@ def test_positive_delete_rule_with_non_admin_user(
     dr = entities.DiscoveryRule(
         hostgroup=hg, organization=[module_org], location=[manager_loc]
     ).create()
-    with Session(test_name, user=manager_user.login, password=manager_user.password) as session:
+    with Session(
+        request.node.nodeid, user=manager_user.login, password=manager_user.password
+    ) as session:
         dr_val = session.discoveryrule.read_all()
         assert dr.name in [rule['Name'] for rule in dr_val]
         session.discoveryrule.delete(dr.name)
@@ -137,7 +137,7 @@ def test_positive_delete_rule_with_non_admin_user(
 
 @pytest.mark.tier2
 def test_positive_view_existing_rule_with_non_admin_user(
-    module_loc, module_org, reader_user, test_name
+    module_loc, module_org, reader_user, request
 ):
     """Existing rule should be viewed to non-admin user by associating
     discovery_reader role.
@@ -158,13 +158,15 @@ def test_positive_view_existing_rule_with_non_admin_user(
     dr = entities.DiscoveryRule(
         hostgroup=hg, organization=[module_org], location=[module_loc]
     ).create()
-    with Session(test_name, user=reader_user.login, password=reader_user.password) as session:
+    with Session(
+        request.node.nodeid, user=reader_user.login, password=reader_user.password
+    ) as session:
         dr_val = session.discoveryrule.read_all()
         assert dr.name in [rule['Name'] for rule in dr_val]
 
 
 @pytest.mark.tier2
-def test_negative_delete_rule_with_non_admin_user(module_loc, module_org, reader_user, test_name):
+def test_negative_delete_rule_with_non_admin_user(module_loc, module_org, reader_user, request):
     """Delete rule with non-admin user by associating discovery_reader role
 
     :id: 23a7627c-6a9b-493b-871f-698543adf1d2
@@ -178,7 +180,9 @@ def test_negative_delete_rule_with_non_admin_user(module_loc, module_org, reader
     dr = entities.DiscoveryRule(
         hostgroup=hg, organization=[module_org], location=[module_loc]
     ).create()
-    with Session(test_name, user=reader_user.login, password=reader_user.password) as session:
+    with Session(
+        request.node.nodeid, user=reader_user.login, password=reader_user.password
+    ) as session:
         with pytest.raises(ValueError):
             session.discoveryrule.delete(dr.name)
         dr_val = session.discoveryrule.read_all()

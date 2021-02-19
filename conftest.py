@@ -21,4 +21,5 @@ pytest_plugins = [
     "pytest_fixtures.smartproxy_fixtures",
     "pytest_fixtures.user_fixtures",
     "pytest_fixtures.upgrade_fixtures",
+    "pytest_fixtures.ui_fixtures",
 ]

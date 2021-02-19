@@ -11,6 +11,7 @@ except ImportError:
 from _pytest.junitxml import xml_key
 from robottelo.config import settings
 from robottelo.decorators import setting_is_set
+from robottelo.ssh import command as ssh_command
 
 FMT_XUNIT_TIME = "%Y-%m-%dT%H:%M:%S"
 
@@ -94,24 +95,22 @@ def robottelo_logger(request, worker_id):
 
 
 @pytest.fixture(autouse=True)
-def log_test_execution(robottelo_logger, test_name):
-    robottelo_logger.debug(f'Started Test: {test_name}')
+def log_test_execution(robottelo_logger, request):
+    robottelo_logger.debug(f'Started Test: {request.node.nodeid}')
     yield
-    robottelo_logger.debug(f'Finished Test: {test_name}')
+    robottelo_logger.debug(f'Finished Test: {request.node.nodeid}')
 
 
-@pytest.fixture
-def test_name(request):
-    """Returns current test full name, prefixed by module name and test class
-    name (if present).
+@pytest.fixture(autouse=True, scope="session")
+def relax_bfa():
+    """Relax BFA protection against failed login attempts
 
-    Examples::
-
-        tests.foreman.ui.test_activationkey::test_positive_create
-        tests.foreman.api.test_errata::TestErrata::test_positive_list
-
+    The robottelo.ssh.command should resolve the hostname for the current xdist worker
     """
-    return request.node._nodeid
+    ssh_command(
+        f'hammer -u admin -p {settings.server.admin_password} '
+        'settings set --name "failed_login_attempts_limit" --value 0'
+    )
 
 
 def pytest_collection_modifyitems(session, items, config):
